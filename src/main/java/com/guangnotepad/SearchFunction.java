@@ -44,7 +44,7 @@ public class SearchFunction implements ActionListener, KeyListener
         // Get the location of the menu bar and its size
         // 获取菜单栏的位置和大小
         Point location = gui.menuBar.getLocationOnScreen();
-        final Dimension screenSize = gui.menuBar.getSize();
+        Dimension menuBarSize = gui.menuBar.getSize();
         findReplaceDialog = new JDialog(gui.window, false);
         GridBagLayout dialogLayout = new GridBagLayout();
 
@@ -57,12 +57,12 @@ public class SearchFunction implements ActionListener, KeyListener
         
         // Set the window to the top right corner
         // 设置窗口在右上角
-        findReplaceDialog.setLocation(location.x + screenSize.width - 
+        findReplaceDialog.setLocation(location.x + menuBarSize.width - 
             findReplaceDialog.getWidth() - 10, location.y + 40);
 
         // Create a button to close the search window
         // 创建一个按钮来关闭搜索窗口
-        closeButton = new JButton("X");
+        closeButton = new JButton("x");
         Dimension closeButtonSize = new Dimension(16, 16);
         closeButton.setPreferredSize(closeButtonSize);
         closeButton.addActionListener(this);
@@ -160,8 +160,9 @@ public class SearchFunction implements ActionListener, KeyListener
             @Override
             public void componentMoved(ComponentEvent e) 
             {
+                Dimension menuBarSize = gui.menuBar.getSize();
                 Point newLocation = gui.menuBar.getLocationOnScreen();
-                findReplaceDialog.setLocation(newLocation.x + screenSize.width - 
+                findReplaceDialog.setLocation(newLocation.x + menuBarSize.width - 
                     findReplaceDialog.getWidth() - 10, newLocation.y + 40);
             }
         });

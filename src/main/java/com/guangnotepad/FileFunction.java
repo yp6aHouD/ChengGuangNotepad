@@ -143,6 +143,15 @@ public class FileFunction
             gui.window.setTitle(fileName);
             readFileContents(selectedFile);
             isNewFile = false;
+
+            // Отменяем заголовок "modified", который автоматически ставится при открытии файла
+            if (gui.window.getTitle().endsWith(" — Modified"))
+                {
+                    String title = gui.window.getTitle();
+                    title = title.replace(" — Modified", "");
+                    gui.window.setTitle(title);
+                }
+            isSaved = true;
         }
 
         else 
@@ -172,7 +181,7 @@ public class FileFunction
             // 尝试写入文件，如果发生异常，显示错误消息
             try
             {
-                FileWriter fw = new FileWriter(fileAddress + fileName);
+                FileWriter fw = new FileWriter(fileAddress);
                 fw.write(gui.textArea.getText());
                 fw.close();
 
