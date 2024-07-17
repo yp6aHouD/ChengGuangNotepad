@@ -32,6 +32,15 @@ public class SearchFunction implements ActionListener, KeyListener
         isActive = true;
         this.gui = gui;
 
+        gui.window.addComponentListener(new ComponentAdapter() 
+        {
+            @Override
+            public void componentResized(ComponentEvent e)
+            {
+                updateSearchWindowPosition();
+            }
+        });
+
         // Get the location of the menu bar and its size
         // 获取菜单栏的位置和大小
         Point location = gui.menuBar.getLocationOnScreen();
@@ -54,7 +63,7 @@ public class SearchFunction implements ActionListener, KeyListener
         // Create a button to close the search window
         // 创建一个按钮来关闭搜索窗口
         closeButton = new JButton("X");
-        Dimension closeButtonSize = new Dimension(15, 15);
+        Dimension closeButtonSize = new Dimension(16, 16);
         closeButton.setPreferredSize(closeButtonSize);
         closeButton.addActionListener(this);
         closeButton.setActionCommand("Close");
@@ -368,7 +377,9 @@ public class SearchFunction implements ActionListener, KeyListener
         switch (e.getActionCommand())
         {
             case "Close":
-                findReplaceDialog.dispose(); break;
+                findReplaceDialog.dispose();
+                isActive = false;
+                break;
             case "Search":
                 performSearch(); break;
             case "Next":
@@ -387,8 +398,17 @@ public class SearchFunction implements ActionListener, KeyListener
     public void keyPressed(KeyEvent e) 
     {
         // Two cases for closing the window
-        if (e.getSource() == gui.textArea && e.getKeyCode() == KeyEvent.VK_ESCAPE) findReplaceDialog.dispose();  
-        else if (e.getSource() == replaceField && e.getKeyCode() == KeyEvent.VK_ESCAPE) findReplaceDialog.dispose();
+        if (e.getSource() == gui.textArea && e.getKeyCode() == KeyEvent.VK_ESCAPE)
+        {
+            isActive = false;
+            findReplaceDialog.dispose();  
+        }
+        else if (e.getSource() == replaceField && e.getKeyCode() == KeyEvent.VK_ESCAPE)
+        {
+            isActive = false;
+            findReplaceDialog.dispose();
+        }
+            
         
         // Case for closing or performing search when search field is focused
         // 当搜索字段聚焦时关闭或执行搜索的情况
@@ -397,6 +417,7 @@ public class SearchFunction implements ActionListener, KeyListener
             switch (e.getKeyCode())
             {
                 case KeyEvent.VK_ESCAPE:
+                    isActive = false;
                     findReplaceDialog.dispose(); break;
                 case KeyEvent.VK_ENTER:
                     performSearch(); break;
@@ -414,5 +435,19 @@ public class SearchFunction implements ActionListener, KeyListener
     public void keyReleased(KeyEvent e)
     {
 
+    }
+
+    private void updateSearchWindowPosition() 
+    {
+        // Получаем размеры основного окна
+        Dimension windowSize = gui.window.getSize();
+        Point windowLocation = gui.window.getLocationOnScreen();
+    
+        // Вычисляем новое положение окна поиска
+        int searchWindowX = windowLocation.x + windowSize.width - findReplaceDialog.getWidth() - 10; // Отступ справа
+        int searchWindowY = windowLocation.y + 68; // Отступ сверху
+    
+        // Предполагаем, что у вас есть JFrame или JDialog для окна поиска, назовем его searchWindow
+        findReplaceDialog.setLocation(searchWindowX, searchWindowY);
     }
 }
