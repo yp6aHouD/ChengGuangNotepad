@@ -29,9 +29,12 @@ import org.mozilla.universalchardet.UniversalDetector;
 
 public class FileFunction
 {
+    private File selectedFile;
+    private FileDialog fd;
     private Document doc;
     private GUI gui;
-    private String fileName, fileAddress, fileExtension, selectedEncoding;
+    private String fileName, fileExtension;
+    private String selectedEncoding = System.getProperty("file.encoding");;
     private boolean isNewFile = true;
     boolean isSaved = false;
 
@@ -124,7 +127,7 @@ public class FileFunction
         // Если файл выбран, обновляем имя файла, адрес и заголовок окна
         if (result == JFileChooser.APPROVE_OPTION)
         {
-            File selectedFile = fileChooser.getSelectedFile();
+            selectedFile = fileChooser.getSelectedFile();
     
             // Узнаём имя файла и расширение
             fileName = selectedFile.getName();
@@ -139,7 +142,6 @@ public class FileFunction
 
             // Если файл выбран и txt
             selectedEncoding = detectFileEncoding(selectedFile);
-            fileAddress = selectedFile.getAbsolutePath();
             gui.window.setTitle(fileName);
             readFileContents(selectedFile);
             isNewFile = false;
@@ -179,11 +181,9 @@ public class FileFunction
         {
             // Try to write to file, if exception occurs, show error message
             // 尝试写入文件，如果发生异常，显示错误消息
-            try
+            try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(selectedFile), selectedEncoding)))
             {
-                FileWriter fw = new FileWriter(fileAddress);
-                fw.write(gui.textArea.getText());
-                fw.close();
+                writer.write(gui.textArea.getText());
 
                 if (gui.window.getTitle().endsWith(" — Modified"))
                 {
@@ -199,8 +199,9 @@ public class FileFunction
             }
             catch (Exception e)
             {
-                gui.currentPopup = new PopupMessage(gui, "Exception when saving file!\n" + e.toString());
+                gui.currentPopup = new PopupMessage(gui, "File was deleted before saving, creating new file");
                 gui.currentPopup.setVisible(true);
+                saveAs();
             }
         }
     }
@@ -212,7 +213,7 @@ public class FileFunction
     {
         // Create a new file dialog in save mode
         // 在保存模式下创建一个新的文件对话框
-        FileDialog fd = new FileDialog(gui.window, "save", FileDialog.SAVE);
+        fd = new FileDialog(gui.window, "save", FileDialog.SAVE);
         fd.setVisible(true);
 
         // If user have chosen destination, set file name and address, and set title
@@ -220,11 +221,10 @@ public class FileFunction
         if (fd.getFile() != null)
         {
             fileName = fd.getFile();
-            fileAddress = fd.getDirectory();
 
             // Check if the file has an extension
             // 检查文件是否有扩展名
-            if (!fileName.contains("."))
+            if (!fileName.contains(".txt"))
             {
                 // If not, add .txt
                 fileName += ".txt";
@@ -242,20 +242,18 @@ public class FileFunction
             return;
         }
 
-        // Try to write to file using FileWriter, if exception occurs, show error message
-        // 使用FileWriter尝试写入文件，如果发生异常，显示错误消息
-        try 
+        // Try to write to file using BufferedWriter and file encoding, if exception occurs, show error message
+        // 使用BufferedWriter尝试写入文件，如果发生异常，显示错误消息
+        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(fd.getDirectory() + fileName), selectedEncoding)))
         {
-            FileWriter fw = new FileWriter(fileAddress + fileName);
-            fw.write(gui.textArea.getText());
-            fw.close();
+            writer.write(gui.textArea.getText());
 
             if (gui.window.getTitle().endsWith(" — Modified"))
-                {
-                    String title = gui.window.getTitle();
-                    title = title.replace(" — Modified", "");
-                    gui.window.setTitle(title);
-                }
+            {
+                String title = gui.window.getTitle();
+                title = title.replace(" — Modified", "");
+                gui.window.setTitle(title);
+            }
 
             isNewFile = false;
             isSaved = true;
