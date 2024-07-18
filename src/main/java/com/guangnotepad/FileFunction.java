@@ -355,10 +355,9 @@ public class FileFunction
 
         try (InputStreamReader isr = new InputStreamReader(new FileInputStream(file), selectedEncoding))
         {
-            /* gui.textArea.setText("");
-            rtfKit.read(isr, gui.textArea.getStyledDocument(), 0); */
-            gui.textArea.setDocument(new DefaultStyledDocument());
-            rtfKit.read(isr, gui.textArea.getStyledDocument(), 0);
+            StyledDocument doc = gui.textArea.getStyledDocument();
+            doc.remove(0, doc.getLength());
+            rtfKit.read(isr, doc, 0);
         }
         catch (IOException | BadLocationException e)
         {
