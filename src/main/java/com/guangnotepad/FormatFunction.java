@@ -5,11 +5,11 @@ import javax.swing.*;
 import javax.swing.text.*;
 
 /* 
- * All formatting in the program works through StyledDocument and Document class
+ * All formatting in the program works through StyledDocument
  * These classes allow you to format parts of the text, not the entire text
  * Including you can change the color, font, text size in the selected area
  * 
- * 这个程序中的所有格式化都是通过StyledDocument和Document类来实现的
+ * 这个程序中的所有格式化都是通过StyledDocument类来实现的
  * 这些类允许你格式化文本的部分，而不是整个文本
  * 包括你可以在选定区域改变颜色，字体，文本大小
  */
@@ -24,8 +24,9 @@ public class FormatFunction
     private static String selectedFont;
     private static String selectedFontStyle;
     private static int selectedFontSize;
+    private StyledDocument doc;
 
-    public FormatFunction(GUI gui)
+    public FormatFunction(GUI gui, StyledDocument doc)
     {
         this.gui = gui;
     }
@@ -130,11 +131,10 @@ public class FormatFunction
 
             // Getting the StyledDocument
             // 获取StyledDocument
-            StyledDocument doc = gui.textArea.getStyledDocument();
 
             // Creating a new style
             // 创建新样式
-            Style style = doc.addStyle("NewFontAndSizeStyle", null);
+            Style style = gui.doc.addStyle("NewFontAndSizeStyle", null);
             StyleConstants.setFontFamily(style, selectedFont);
             StyleConstants.setFontSize(style, selectedFontSize);
 
@@ -158,18 +158,14 @@ public class FormatFunction
 
             // Applying the style to the selected text
             // 将样式应用于选定的文本
-            doc.setCharacterAttributes(start, end - start, style, false);
+            gui.doc.setCharacterAttributes(start, end - start, style, false);
         } 
 
         else 
         {
-            // Getting the StyledDocument
-            // 获取StyledDocument
-            StyledDocument doc = gui.textArea.getStyledDocument();
-
             // Creating a new style
             // 创建新样式
-            Style style = doc.addStyle("NewFontAndSizeStyle", null);
+            Style style = gui.doc.addStyle("NewFontAndSizeStyle", null);
             StyleConstants.setFontFamily(style, selectedFont);
             StyleConstants.setFontSize(style, selectedFontSize);
 
@@ -220,8 +216,7 @@ public class FormatFunction
         {
             // Creating a style to change the color of only the selected text
             // 创建一个样式，只改变选定文本的颜色
-            StyledDocument doc = gui.textArea.getStyledDocument();
-            Style style = doc.addStyle("newStyle", null);
+            Style style = gui.doc.addStyle("newStyle", null);
 
             // Getting the start and end of the selected text
             // 获取选定文本的开始和结束
@@ -237,12 +232,12 @@ public class FormatFunction
                 if (isTextColor)
                 {
                     StyleConstants.setForeground(style, selectedColor);
-                    doc.setCharacterAttributes(start, end - start, style, false);
+                    gui.doc.setCharacterAttributes(start, end - start, style, false);
                 }
                 else
                 {
                     StyleConstants.setBackground(style, selectedColor);
-                    doc.setCharacterAttributes(start, end - start, style, false);
+                    gui.doc.setCharacterAttributes(start, end - start, style, false);
                 }
             }
         }
@@ -253,13 +248,9 @@ public class FormatFunction
         {
             if (selectedColor != null)
             {
-                // Receive the StyledDocument
-                // 获取StyledDocument
-                StyledDocument doc = gui.textArea.getStyledDocument();
-
                 // Creating a new style
                 // 创建新样式
-                Style style = doc.addStyle("NewColorStyle", null);
+                Style style = gui.doc.addStyle("NewColorStyle", null);
 
                 // Setting new style
                 // 设置新样式
@@ -304,6 +295,9 @@ public class FormatFunction
     {
         // Getting the selected text
         // 获取选定的文本
+
+        doc = gui.doc;
+
         String selectedText = gui.textArea.getSelectedText();
         if (selectedText != null)
         {
@@ -314,7 +308,6 @@ public class FormatFunction
 
             // Creating new style
             // 创建新样式
-            StyledDocument doc = gui.textArea.getStyledDocument();
             SimpleAttributeSet attrs = new SimpleAttributeSet();
             StyleConstants.setBackground(attrs, Color.YELLOW);
 
@@ -337,13 +330,12 @@ public class FormatFunction
         // Getting the current caret position and StyledDocument
         // 获取当前插入符位置和StyledDocument
         int caret = gui.textArea.getCaretPosition();
-        StyledDocument doc = gui.textArea.getStyledDocument();
-        Style style = doc.addStyle("newStyle", null);
+        Style style = gui.doc.addStyle("newStyle", null);
 
         // Setting the color of the text to black
         // 将文本颜色设置为黑色
         StyleConstants.setForeground(style, Color.BLACK);
-        doc.setParagraphAttributes(caret, doc.getLength() - caret, style, false);
+        gui.doc.setParagraphAttributes(caret, gui.doc.getLength() - caret, style, false);
 
         // Setting the background color of the text to the background color of JTextArea
         // 将文本的背景颜色设置为JTextArea的背景颜色
@@ -359,7 +351,7 @@ public class FormatFunction
         // 将属性应用于文本
         gui.textArea.setCharacterAttributes(attrs, true);
         StyleConstants.setBackground(style, gui.textArea.getBackground());
-        doc.setParagraphAttributes(caret, doc.getLength() - caret, style, false);
+        gui.doc.setParagraphAttributes(caret, gui.doc.getLength() - caret, style, false);
 
         // Popup message
         // 弹出消息

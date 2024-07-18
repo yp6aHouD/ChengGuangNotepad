@@ -7,6 +7,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
+import javax.swing.text.StyledDocument;
 import javax.swing.undo.UndoManager;
 
 
@@ -15,6 +16,7 @@ import javax.swing.undo.UndoManager;
 
 public class GUI implements ActionListener
 {
+    public StyledDocument doc;
     // Main window 
     // 主窗口
     JFrame window;
@@ -44,7 +46,7 @@ public class GUI implements ActionListener
     // Methods of the framework 
     // 框架的方法
     FileFunction fileFunction = new FileFunction(this);
-    FormatFunction formatFunction = new FormatFunction(this);
+    FormatFunction formatFunction = new FormatFunction(this, doc);
     EditFunction editFunction = new EditFunction(this);
     HotkeyHandler hotkeyHandler = new HotkeyHandler(this);
     UndoManager um = new UndoManager();
@@ -141,6 +143,7 @@ public class GUI implements ActionListener
 
         this.scrollPane.setBorder(BorderFactory.createEmptyBorder());
         window.add(scrollPane);
+        doc = textArea.getStyledDocument();
 
         // Add a document listener to the text area
         // 为文本区域添加文档监听器

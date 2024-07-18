@@ -1,10 +1,11 @@
 package com.guangnotepad;
 
-import java.awt.FileDialog;
 import java.io.*;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.text.Document;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.StyledDocument;
+import javax.swing.text.rtf.RTFEditorKit;
 
 import org.mozilla.universalchardet.UniversalDetector;
 
@@ -30,8 +31,7 @@ import org.mozilla.universalchardet.UniversalDetector;
 public class FileFunction
 {
     private File selectedFile;
-    private FileDialog fd;
-    private Document doc;
+    private StyledDocument doc;
     private GUI gui;
     private String fileName, fileExtension;
     private String selectedEncoding = System.getProperty("file.encoding");;
@@ -51,7 +51,7 @@ public class FileFunction
     {
         // Get document from text area
         // 从文本区域获取文档
-        doc = gui.textArea.getDocument();
+        doc = gui.textArea.getStyledDocument();
 
         // If text area is not empty, ask user if they want to save
         // 如果文本区域不为空，询问用户是否要保存
@@ -116,46 +116,62 @@ public class FileFunction
     // 打开文件方法
     public void openFile()
     {
-        // Окно выбора файла
+        // Setting file chooser dialog window
         JFileChooser fileChooser = new JFileChooser();
-        FileNameExtensionFilter filter = new FileNameExtensionFilter("Text document", "txt");
-        fileChooser.setFileFilter(filter);
+        FileNameExtensionFilter txtFilter = new FileNameExtensionFilter("Text Files (*.txt)", "txt");
+        FileNameExtensionFilter rtfFilter = new FileNameExtensionFilter("Rich Text Format (*.rtf)", "rtf");
+
+        fileChooser.addChoosableFileFilter(txtFilter);
+        fileChooser.addChoosableFileFilter(rtfFilter);
+
+        fileChooser.setFileFilter(txtFilter);
         
-        // Отображаем диалоговое окно для выбора файла
+        // Showing dialog window and getting result
         int result = fileChooser.showOpenDialog(gui.window);
 
-        // Если файл выбран, обновляем имя файла, адрес и заголовок окна
+        // If user selects a file
         if (result == JFileChooser.APPROVE_OPTION)
         {
             selectedFile = fileChooser.getSelectedFile();
     
-            // Узнаём имя файла и расширение
+            // Getting name and file extension
             fileName = selectedFile.getName();
             fileExtension = fileName.substring(fileName.lastIndexOf(".") + 1);
 
-            if (!fileExtension.equalsIgnoreCase("txt"))
+            // If there's no extension or it's not a txt or rtf file
+            if (!fileExtension.equalsIgnoreCase("txt") && !fileExtension.equalsIgnoreCase("rtf"))
             {
-                gui.currentPopup = new PopupMessage(gui, "Only TXT files can be opened!");
+                gui.currentPopup = new PopupMessage(gui, "Only txt/rtf files can be opened!");
                 gui.currentPopup.setVisible(true);
                 return;
             }
 
-            // Если файл выбран и txt
             selectedEncoding = detectFileEncoding(selectedFile);
-            gui.window.setTitle(fileName);
-            readFileContents(selectedFile);
-            isNewFile = false;
 
-            // Отменяем заголовок "modified", который автоматически ставится при открытии файла
+            switch (fileExtension)
+            {
+                case "txt":
+                    readTxtFile(selectedFile);
+                    break;
+                case "rtf":
+                    readRtfFile(selectedFile);
+                    break;
+            }
+
+            gui.window.setTitle(fileName);
+            isNewFile = false;
+            isSaved = true;
+
+            // Removing "Modified" title after opening file, because program automatically adds it
             if (gui.window.getTitle().endsWith(" — Modified"))
                 {
                     String title = gui.window.getTitle();
                     title = title.replace(" — Modified", "");
                     gui.window.setTitle(title);
                 }
-            isSaved = true;
         }
 
+        // If user selects "cancel" option
         else 
         {
             gui.currentPopup = new PopupMessage(gui, "File wasn't selected!");
@@ -181,72 +197,34 @@ public class FileFunction
         {
             // Try to write to file, if exception occurs, show error message
             // 尝试写入文件，如果发生异常，显示错误消息
-            try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(selectedFile), selectedEncoding)))
+            fileName = selectedFile.getName();
+            if (fileName.endsWith(".rtf"))
             {
-                writer.write(gui.textArea.getText());
+                RTFEditorKit rtfKit = new RTFEditorKit();
 
-                if (gui.window.getTitle().endsWith(" — Modified"))
+                try (FileOutputStream fos = new FileOutputStream(selectedFile))
                 {
-                    String title = gui.window.getTitle();
-                    title = title.replace(" — Modified", "");
-                    gui.window.setTitle(title);
+                    rtfKit.write(fos, doc, 0, doc.getLength());
+                }             
+                catch (Exception e)
+                {
+                    gui.currentPopup = new PopupMessage(gui, "Error saving rtf file (211): " + e.getMessage());
+                    gui.currentPopup.setVisible(true);
+                } 
+            }
+            else if (fileName.endsWith(".txt"))
+            {
+                try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(selectedFile), selectedEncoding)))
+                {
+                    writer.write(gui.textArea.getText());
                 }
-
-                isSaved = true;
-
-                gui.currentPopup = new PopupMessage(gui, "File Saved!");
-                gui.currentPopup.setVisible(true);
+                catch (Exception e)
+                {
+                    gui.currentPopup = new PopupMessage(gui, "Error saving txt file (223): " + e.getMessage());
+                    gui.currentPopup.setVisible(true);
+                } 
             }
-            catch (Exception e)
-            {
-                gui.currentPopup = new PopupMessage(gui, "File was deleted before saving, creating new file");
-                gui.currentPopup.setVisible(true);
-                saveAs();
-            }
-        }
-    }
-
-
-    // Save as method
-    // 另存为方法
-    public void saveAs()
-    {
-        // Create a new file dialog in save mode
-        // 在保存模式下创建一个新的文件对话框
-        fd = new FileDialog(gui.window, "save", FileDialog.SAVE);
-        fd.setVisible(true);
-
-        // If user have chosen destination, set file name and address, and set title
-        // 如果用户选择了目的地，设置文件名和地址，并设置标题
-        if (fd.getFile() != null)
-        {
-            fileName = fd.getFile();
-
-            // Check if the file has an extension
-            // 检查文件是否有扩展名
-            if (!fileName.contains(".txt"))
-            {
-                // If not, add .txt
-                fileName += ".txt";
-            }
-
-            gui.window.setTitle(fileName);
-        }
-
-        // If file is not selected, return
-        // 如果没有选择文件，返回
-        else
-        {
-            gui.currentPopup = new PopupMessage(gui, "File wasn't saved!");
-            gui.currentPopup.setVisible(true);
-            return;
-        }
-
-        // Try to write to file using BufferedWriter and file encoding, if exception occurs, show error message
-        // 使用BufferedWriter尝试写入文件，如果发生异常，显示错误消息
-        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(fd.getDirectory() + fileName), selectedEncoding)))
-        {
-            writer.write(gui.textArea.getText());
+            
 
             if (gui.window.getTitle().endsWith(" — Modified"))
             {
@@ -255,24 +233,62 @@ public class FileFunction
                 gui.window.setTitle(title);
             }
 
-            isNewFile = false;
             isSaved = true;
 
-            gui.currentPopup = new PopupMessage(gui, "File saved!");
-            gui.currentPopup.setVisible(true);
-        }
-        catch (Exception e)
-        {
-            gui.currentPopup = new PopupMessage(gui, "Exception when saving file!\n" + e.toString());
+            gui.currentPopup = new PopupMessage(gui, "File Saved!");
             gui.currentPopup.setVisible(true);
         }
     }
+
+
+    // Save as method
+    // 另存为方法
+    public void saveAs()
+    {
+        // Create a new FileChooser
+        // 在保存模式下创建一个新的文件对话框
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Save as...");
+
+        // Создание фильтров для txt и rtf форматов
+        FileNameExtensionFilter txtFilter = new FileNameExtensionFilter("Text Files (*.txt)", "txt");
+        FileNameExtensionFilter rtfFilter = new FileNameExtensionFilter("Rich Text Format (*.rtf)", "rtf");
+
+        // Добавление фильтров в JFileChooser
+        fileChooser.addChoosableFileFilter(txtFilter);
+        fileChooser.addChoosableFileFilter(rtfFilter);
+
+        // Установка фильтра txt как фильтра по умолчанию
+        fileChooser.setFileFilter(txtFilter);
+
+        int userSelection = fileChooser.showSaveDialog(gui.window);
+
+        if (userSelection == JFileChooser.APPROVE_OPTION)
+        {
+            File fileToSave = fileChooser.getSelectedFile();
+            String selectedExtension = ((FileNameExtensionFilter)fileChooser.getFileFilter()).getExtensions()[0];
+            
+            // Проверка выбранного расширения и сохранение файла в соответствующем формате
+            if ("txt".equals(selectedExtension)) 
+            {
+                // Сохранение файла в формате .txt
+                saveAsTxt(fileToSave);
+            } 
+
+            else if ("rtf".equals(selectedExtension))
+            {
+                // Сохранение файла в формате .rtf
+                saveAsRtf(fileToSave);
+            }
+        }
+    }
+
 
     // Exit method
     // 退出方法
     public void exit()
     {
-        doc = gui.textArea.getDocument();
+        doc = gui.textArea.getStyledDocument();
 
         if (isSaved) System.exit(0);
         else if (!isSaved && isNewFile && doc.getLength() == 0) System.exit(0);
@@ -310,7 +326,8 @@ public class FileFunction
         else System.exit(0);
     }
 
-    void readFileContents(File file)
+    // Read txt file
+    void readTxtFile(File file)
     {
         StringBuilder content = new StringBuilder();
 
@@ -326,17 +343,39 @@ public class FileFunction
         } 
         catch (Exception e) 
         {
-            JOptionPane.showMessageDialog(null, "Error reading file: " + e.getMessage());
+            JOptionPane.showMessageDialog(null, "Error reading txt file: " + e.getMessage());
         }
     }
 
-    private String detectFileEncoding(File file) {
+
+    // Read rtf file
+    void readRtfFile(File file)
+    {
+        RTFEditorKit rtfKit = new RTFEditorKit();
+        selectedEncoding = detectFileEncoding(file);
+
+        try (InputStreamReader isr = new InputStreamReader(new FileInputStream(file), selectedEncoding))
+        {
+            rtfKit.read(isr, gui.textArea.getStyledDocument(), 0);
+        }
+        catch (IOException | BadLocationException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+
+    // file encoding detector
+    private String detectFileEncoding(File file) 
+    {
         byte[] buf = new byte[4096];
-        try (FileInputStream fis = new FileInputStream(file)) {
+        try (FileInputStream fis = new FileInputStream(file))
+        {
             UniversalDetector detector = new UniversalDetector(null);
             
             int nread;
-            while ((nread = fis.read(buf)) > 0 && !detector.isDone()) {
+            while ((nread = fis.read(buf)) > 0 && !detector.isDone())
+            {
                 detector.handleData(buf, 0, nread);
             }
             detector.dataEnd();
@@ -344,14 +383,92 @@ public class FileFunction
             String encoding = detector.getDetectedCharset();
             detector.reset();
             
-            if (encoding != null) {
+            if (encoding != null)
+            {
                 return encoding;
-            } else {
+            } 
+            else 
+            {
                 return "CP1251"; // Возвращаем значение по умолчанию, если кодировка не была определена
             }
-        } catch (IOException e) {
+
+        } 
+        
+        catch (IOException e)
+        {
             e.printStackTrace();
             return "CP1251"; // Возвращаем значение по умолчанию в случае ошибки
+        }
+    }
+
+    
+    // save as txt file
+    void saveAsTxt(File file)
+    {   
+        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter
+            (new FileOutputStream(
+                file.getName().contains(".txt") ? file.getAbsolutePath() : file.getAbsolutePath() + ".txt"), selectedEncoding)))
+        {
+            writer.write(gui.textArea.getText());
+
+            if (gui.window.getTitle().endsWith(" — Modified"))
+            {
+                String title = gui.window.getTitle();
+                title = title.replace(" — Modified", "");
+                gui.window.setTitle(title);
+            }
+
+            isNewFile = false;
+            isSaved = true;
+
+            gui.currentPopup = new PopupMessage(gui, "File saved in txt!");
+            gui.currentPopup.setVisible(true);
+
+            gui.window.setTitle(file.getName().contains(".txt") ? file.getName() : file.getName() + ".txt");
+
+            String filePath = file.getAbsolutePath().contains(".txt") ? file.getAbsolutePath() : file.getAbsolutePath() + ".txt";
+            selectedFile = new File(filePath);
+        }
+
+        catch (Exception e)
+        {
+            gui.currentPopup = new PopupMessage(gui, "Exception when saving file in txt format!\n" + e.toString());
+            gui.currentPopup.setVisible(true);
+        }
+    }
+
+
+    // save as rtf file
+    void saveAsRtf(File file)
+    {
+        String filePath = file.getAbsolutePath().contains(".rtf") ? file.getAbsolutePath() : file.getAbsolutePath() + ".rtf";
+        selectedFile = new File(filePath);
+
+        RTFEditorKit rtfKit = new RTFEditorKit();
+        try (BufferedOutputStream fos = new BufferedOutputStream(new FileOutputStream(selectedFile)))
+        {
+            rtfKit.write(fos, gui.textArea.getStyledDocument(), 0, gui.textArea.getStyledDocument().getLength());
+            
+            if (gui.window.getTitle().endsWith(" — Modified"))
+            {
+                String title = gui.window.getTitle();
+                title = title.replace(" — Modified", "");
+                gui.window.setTitle(title);
+            }
+
+            isNewFile = false;
+            isSaved = true;
+
+            gui.currentPopup = new PopupMessage(gui, "File saved in rtf!");
+            gui.currentPopup.setVisible(true);
+
+            gui.window.setTitle(file.getName().contains(".rtf") ? file.getName() : file.getName() + ".rtf");
+        }
+
+        catch (Exception e)
+        {
+            gui.currentPopup = new PopupMessage(gui, "Exception when saving file in rtf format!\n" + e.toString());
+            gui.currentPopup.setVisible(true);
         }
     }
 }
