@@ -2,7 +2,7 @@
 Simple Notepad on Java language (电子科技大学Java语言论文)
 
 Key features:
-- Open / Save file (txt / rtf format)
+- Open / save file (txt / rtf format)
 - Hotkeys
 - Edit notification + undo function
 - Search function (kinda same as TextEdit on Macs)
