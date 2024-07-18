@@ -50,7 +50,7 @@ public class FileFunction
     {
         // Get document from text area
         // 从文本区域获取文档
-        doc = gui.textArea.getStyledDocument();
+        doc = gui.doc;
 
         // If text area is not empty, ask user if they want to save
         // 如果文本区域不为空，询问用户是否要保存
@@ -115,6 +115,7 @@ public class FileFunction
     // 打开文件方法
     public void openFile()
     {
+        doc = gui.doc;
         // Setting file chooser dialog window
         JFileChooser fileChooser = new JFileChooser();
         FileNameExtensionFilter txtFilter = new FileNameExtensionFilter("Text Files (*.txt)", "txt");
@@ -183,6 +184,8 @@ public class FileFunction
     // 保存文件方法
     public void save()
     {
+        doc = gui.doc;
+
         // If file is new, call saveAs method
         // 如果文件是新的，调用saveAs方法
         if (isNewFile)
@@ -203,7 +206,7 @@ public class FileFunction
 
                 try (FileOutputStream fos = new FileOutputStream(selectedFile))
                 {
-                    rtfKit.write(fos, gui.textArea.getStyledDocument(), 0, gui.textArea.getStyledDocument().getLength());
+                    rtfKit.write(fos, gui.doc, 0, gui.doc.getLength());
                 }             
                 catch (Exception e)
                 {
@@ -287,7 +290,7 @@ public class FileFunction
     // 退出方法
     public void exit()
     {
-        doc = gui.textArea.getStyledDocument();
+        doc = gui.doc;
 
         if (isSaved) System.exit(0);
         else if (!isSaved && isNewFile && doc.getLength() == 0) System.exit(0);
@@ -355,7 +358,7 @@ public class FileFunction
 
         try (InputStreamReader isr = new InputStreamReader(new FileInputStream(file), selectedEncoding))
         {
-            StyledDocument doc = gui.textArea.getStyledDocument();
+            StyledDocument doc = gui.doc;
             doc.remove(0, doc.getLength());
             rtfKit.read(isr, doc, 0);
         }
@@ -465,7 +468,6 @@ public class FileFunction
 
             gui.window.setTitle(file.getName().contains(".rtf") ? file.getName() : file.getName() + ".rtf");
         }
-
         catch (Exception e)
         {
             gui.currentPopup = new PopupMessage(gui, "Exception when saving file in rtf format!\n" + e.toString());

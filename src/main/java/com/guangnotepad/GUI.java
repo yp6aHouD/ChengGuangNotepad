@@ -153,7 +153,7 @@ public class GUI implements ActionListener
         MutableAttributeSet attrs = new SimpleAttributeSet();
         StyleConstants.setBackground(attrs, textArea.getBackground()); // Установка цвета фона
         StyleConstants.setForeground(attrs, Color.BLACK); // Установка цвета текста
-        doc.setCharacterAttributes(0, doc.getLength(), attrs, false);
+        doc.setCharacterAttributes(0, doc.getLength(), attrs, true);
 
         // Add a document listener to the text area
         // 为文本区域添加文档监听器
