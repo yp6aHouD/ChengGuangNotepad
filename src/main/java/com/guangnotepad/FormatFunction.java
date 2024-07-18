@@ -244,7 +244,7 @@ public class FormatFunction
         
         // If no text was selected
         // 如果没有选择文本
-        else if (selectedText == null)
+        else
         {
             if (selectedColor != null)
             {
@@ -282,11 +282,15 @@ public class FormatFunction
         // 显示JColorChooser对话框并获取选定的颜色
         Color selectedColor = JColorChooser.showDialog(null, "Choose area color", Color.WHITE);
 
-        if (selectedColor != null) {
+        if (selectedColor != null) 
+        {
             // If a color was selected, setting it as the background color of JTextArea
             // 如果选择了颜色，则将其设置为JTextArea的背景颜色
             gui.textArea.setBackground(selectedColor);
         }
+        MutableAttributeSet attrs = new SimpleAttributeSet();
+        StyleConstants.setBackground(attrs, selectedColor);
+        gui.doc.setCharacterAttributes(0, gui.doc.getLength(), attrs, false);
     }
 
     // Method “Quick highlight”
@@ -335,7 +339,7 @@ public class FormatFunction
         // Setting the color of the text to black
         // 将文本颜色设置为黑色
         StyleConstants.setForeground(style, Color.BLACK);
-        gui.doc.setParagraphAttributes(caret, gui.doc.getLength() - caret, style, false);
+        gui.doc.setCharacterAttributes(caret, gui.doc.getLength() - caret, style, false);
 
         // Setting the background color of the text to the background color of JTextArea
         // 将文本的背景颜色设置为JTextArea的背景颜色
@@ -351,7 +355,7 @@ public class FormatFunction
         // 将属性应用于文本
         gui.textArea.setCharacterAttributes(attrs, true);
         StyleConstants.setBackground(style, gui.textArea.getBackground());
-        gui.doc.setParagraphAttributes(caret, gui.doc.getLength() - caret, style, false);
+        gui.doc.setCharacterAttributes(caret, gui.doc.getLength() - caret, style, false);
 
         // Popup message
         // 弹出消息

@@ -164,11 +164,11 @@ public class FileFunction
 
             // Removing "Modified" title after opening file, because program automatically adds it
             if (gui.window.getTitle().endsWith(" — Modified"))
-                {
-                    String title = gui.window.getTitle();
-                    title = title.replace(" — Modified", "");
-                    gui.window.setTitle(title);
-                }
+            {
+                String title = gui.window.getTitle();
+                title = title.replace(" — Modified", "");
+                gui.window.setTitle(title);
+            }
         }
 
         // If user selects "cancel" option
@@ -204,7 +204,7 @@ public class FileFunction
 
                 try (FileOutputStream fos = new FileOutputStream(selectedFile))
                 {
-                    rtfKit.write(fos, doc, 0, doc.getLength());
+                    rtfKit.write(fos, gui.textArea.getStyledDocument(), 0, gui.textArea.getStyledDocument().getLength());
                 }             
                 catch (Exception e)
                 {
@@ -356,6 +356,7 @@ public class FileFunction
 
         try (InputStreamReader isr = new InputStreamReader(new FileInputStream(file), selectedEncoding))
         {
+            //gui.textArea.setText("");
             rtfKit.read(isr, gui.textArea.getStyledDocument(), 0);
         }
         catch (IOException | BadLocationException e)
@@ -447,7 +448,7 @@ public class FileFunction
         RTFEditorKit rtfKit = new RTFEditorKit();
         try (BufferedOutputStream fos = new BufferedOutputStream(new FileOutputStream(selectedFile)))
         {
-            rtfKit.write(fos, gui.textArea.getStyledDocument(), 0, gui.textArea.getStyledDocument().getLength());
+            rtfKit.write(fos, gui.doc, 0, gui.doc.getLength());
             
             if (gui.window.getTitle().endsWith(" — Modified"))
             {
