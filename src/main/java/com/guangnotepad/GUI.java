@@ -7,6 +7,9 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
+import javax.swing.text.MutableAttributeSet;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import javax.swing.undo.UndoManager;
 
@@ -143,7 +146,14 @@ public class GUI implements ActionListener
 
         this.scrollPane.setBorder(BorderFactory.createEmptyBorder());
         window.add(scrollPane);
+    
+        // Receiving the document from the text area 
+        // And setting default text color and background color
         doc = textArea.getStyledDocument();
+        MutableAttributeSet attrs = new SimpleAttributeSet();
+        StyleConstants.setBackground(attrs, textArea.getBackground()); // Установка цвета фона
+        StyleConstants.setForeground(attrs, Color.BLACK); // Установка цвета текста
+        doc.setCharacterAttributes(0, doc.getLength(), attrs, false);
 
         // Add a document listener to the text area
         // 为文本区域添加文档监听器

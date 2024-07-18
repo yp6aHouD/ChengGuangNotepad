@@ -134,7 +134,7 @@ public class FormatFunction
 
             // Creating a new style
             // 创建新样式
-            Style style = gui.doc.addStyle("NewFontAndSizeStyle", null);
+            Style style = gui.doc.addStyle(null, null);
             StyleConstants.setFontFamily(style, selectedFont);
             StyleConstants.setFontSize(style, selectedFontSize);
 
@@ -165,7 +165,7 @@ public class FormatFunction
         {
             // Creating a new style
             // 创建新样式
-            Style style = gui.doc.addStyle("NewFontAndSizeStyle", null);
+            Style style = gui.doc.addStyle(null, null);
             StyleConstants.setFontFamily(style, selectedFont);
             StyleConstants.setFontSize(style, selectedFontSize);
 
@@ -216,7 +216,7 @@ public class FormatFunction
         {
             // Creating a style to change the color of only the selected text
             // 创建一个样式，只改变选定文本的颜色
-            Style style = gui.doc.addStyle("newStyle", null);
+            Style style = gui.doc.addStyle(null, null);
 
             // Getting the start and end of the selected text
             // 获取选定文本的开始和结束
@@ -250,7 +250,7 @@ public class FormatFunction
             {
                 // Creating a new style
                 // 创建新样式
-                Style style = gui.doc.addStyle("NewColorStyle", null);
+                Style style = gui.doc.addStyle(null, null);
 
                 // Setting new style
                 // 设置新样式
@@ -334,7 +334,7 @@ public class FormatFunction
         // Getting the current caret position and StyledDocument
         // 获取当前插入符位置和StyledDocument
         int caret = gui.textArea.getCaretPosition();
-        Style style = gui.doc.addStyle("newStyle", null);
+        Style style = gui.doc.addStyle(null, null);
 
         // Setting the color of the text to black
         // 将文本颜色设置为黑色

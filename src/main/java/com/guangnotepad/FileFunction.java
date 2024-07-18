@@ -3,8 +3,7 @@ package com.guangnotepad;
 import java.io.*;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.StyledDocument;
+import javax.swing.text.*;
 import javax.swing.text.rtf.RTFEditorKit;
 
 import org.mozilla.universalchardet.UniversalDetector;
@@ -356,7 +355,9 @@ public class FileFunction
 
         try (InputStreamReader isr = new InputStreamReader(new FileInputStream(file), selectedEncoding))
         {
-            //gui.textArea.setText("");
+            /* gui.textArea.setText("");
+            rtfKit.read(isr, gui.textArea.getStyledDocument(), 0); */
+            gui.textArea.setDocument(new DefaultStyledDocument());
             rtfKit.read(isr, gui.textArea.getStyledDocument(), 0);
         }
         catch (IOException | BadLocationException e)
