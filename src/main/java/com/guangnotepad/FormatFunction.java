@@ -75,41 +75,70 @@ public class FormatFunction
         // 创建一个带有下拉列表的面板
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+
+        // Creating a GridBagLayout and GridBagConstraints
+        GridBagLayout gridBag = new GridBagLayout();
+        GridBagConstraints gbc = new GridBagConstraints();
         
-        // Creating the first row of the panel
+        // Creating the rows of the panel
         // 创建面板的第一行
-        JPanel firstRow = new JPanel();
-        firstRow.add(new JLabel("Font:"));
-        firstRow.add(fontList);
-        firstRow.add(Box.createHorizontalStrut(10));
-        firstRow.add(new JLabel("Size:"));
-        firstRow.add(fontSizeList);
+        JPanel firstRow = new JPanel(gridBag);
+        JPanel secondRow = new JPanel(gridBag);
+        JPanel thirdRow = new JPanel(gridBag);
 
-        // Creating the second row of the panel
-        // 创建面板的第二行
-        JPanel secondRow = new JPanel(); 
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        // First row
+        gbc.gridx = 0;
+        gbc.gridy = 0; // First row
+        firstRow.add(new JLabel("Font:"), gbc);
+
+        gbc.gridx = 1;
+        firstRow.add(fontList, gbc);
+
+        gbc.gridx = 2;
+        firstRow.add(Box.createHorizontalStrut(10), gbc);
+
+        gbc.gridx = 3;
+        firstRow.add(new JLabel("Size:"), gbc);
+
+        gbc.gridx = 4;
+        firstRow.add(fontSizeList, gbc);
+
+        // Second row
+        gbc.gridx = 4; 
+        gbc.gridy = 1; 
+        secondRow.add(new JLabel("Style:"), gbc);
+
+        gbc.gridx = 5;
+        secondRow.add(fontStyleList, gbc);
+
+        gbc.gridx = 6;
+        secondRow.add(Box.createHorizontalStrut(20), gbc);
         
-        // Creating a label for the preview text
-        // 创建一个用于预览文本的标签
-        JLabel previewLabel = new JLabel("Preview text");
+        // Third row
+        gbc.gridy = 2;
+        gbc.gridx = 0;
+        gbc.gridwidth = 5; // Let the component take 5 columns
+        gbc.anchor = GridBagConstraints.CENTER; // Center the component
+        JLabel previewLabel = new JLabel("Preview text | Текст для предпросмотра");
+
+        thirdRow.add(previewLabel, gbc);
+        gbc.gridwidth = 1;
+
         previewLabel.setFont(new Font(selectedFont, Font.PLAIN, selectedFontSize));
-
-        secondRow.add(new JLabel("Style:"));
-        secondRow.add(fontStyleList);
-        secondRow.add(Box.createHorizontalStrut(20));
-
-        secondRow.add(previewLabel);
 
         // Adding rows to the panel
         // 将行添加到面板
-        panel.add(firstRow); panel.add(secondRow);
+        panel.add(firstRow); 
+        panel.add(secondRow);
+        panel.add(thirdRow);
 
         // Updating the preview text when selecting a font, size, or style
         // 选择字体、大小或样式时更新预览文本
         fontList.addActionListener(e -> updatePreview(previewLabel, fontList, fontSizeList, fontStyleList));
         fontSizeList.addActionListener(e -> updatePreview(previewLabel, fontList, fontSizeList, fontStyleList));
         fontStyleList.addActionListener(e -> updatePreview(previewLabel, fontList, fontSizeList, fontStyleList));
-
 
         // Show the window and choose the font / size / style
         // 显示窗口并选择字体/大小/样式
