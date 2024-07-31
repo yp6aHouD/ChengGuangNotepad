@@ -1,5 +1,6 @@
 package com.guangnotepad;
 
+import java.awt.Color;
 import java.io.*;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -356,11 +357,18 @@ public class FileFunction
         RTFEditorKit rtfKit = new RTFEditorKit();
         selectedEncoding = detectFileEncoding(file);
 
-        try (InputStreamReader isr = new InputStreamReader(new FileInputStream(file), selectedEncoding))
+        try (BufferedReader isr = new BufferedReader(new InputStreamReader(new FileInputStream(file))))
         {
-            StyledDocument doc = gui.doc;
+            doc = gui.doc;
             doc.remove(0, doc.getLength());
+
             rtfKit.read(isr, doc, 0);
+
+            MutableAttributeSet attrs = new SimpleAttributeSet();
+            StyleConstants.setBackground(attrs, gui.textArea.getBackground());
+            StyleConstants.setForeground(attrs, Color.BLACK);
+            doc.setParagraphAttributes(0, doc.getLength(), attrs, false);
+            gui.textArea.setCaretPosition(gui.doc.getLength());
         }
         catch (IOException | BadLocationException e)
         {

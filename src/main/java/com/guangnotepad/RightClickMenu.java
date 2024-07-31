@@ -19,7 +19,7 @@ public class RightClickMenu implements ActionListener
     public RightClickMenu(GUI gui) 
     {
         this.gui = gui;
-        formatFunction = new FormatFunction(gui, gui.doc);
+        formatFunction = new FormatFunction(gui);
 
         // Create the right-click menu
         // 创建右键菜单

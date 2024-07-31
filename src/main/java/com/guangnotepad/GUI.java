@@ -49,7 +49,7 @@ public class GUI implements ActionListener
     // Methods of the framework 
     // 框架的方法
     FileFunction fileFunction = new FileFunction(this);
-    FormatFunction formatFunction = new FormatFunction(this, doc);
+    FormatFunction formatFunction = new FormatFunction(this);
     EditFunction editFunction = new EditFunction(this);
     HotkeyHandler hotkeyHandler = new HotkeyHandler(this);
     UndoManager um = new UndoManager();
@@ -153,7 +153,7 @@ public class GUI implements ActionListener
         MutableAttributeSet attrs = new SimpleAttributeSet();
         StyleConstants.setBackground(attrs, textArea.getBackground()); // Установка цвета фона
         StyleConstants.setForeground(attrs, Color.BLACK); // Установка цвета текста
-        doc.setCharacterAttributes(0, doc.getLength(), attrs, true);
+        doc.setParagraphAttributes(0, doc.getLength(), attrs, false);
 
         // Add a document listener to the text area
         // 为文本区域添加文档监听器

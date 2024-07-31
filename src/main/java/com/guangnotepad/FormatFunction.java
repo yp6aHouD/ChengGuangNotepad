@@ -26,7 +26,7 @@ public class FormatFunction
     private static int selectedFontSize;
     private StyledDocument doc;
 
-    public FormatFunction(GUI gui, StyledDocument doc)
+    public FormatFunction(GUI gui)
     {
         this.gui = gui;
     }
@@ -157,9 +157,6 @@ public class FormatFunction
             // 获取选定文本的开始和结束
             int start = gui.textArea.getSelectionStart();
             int end = gui.textArea.getSelectionEnd();
-
-            // Getting the StyledDocument
-            // 获取StyledDocument
 
             // Creating a new style
             // 创建新样式
@@ -311,15 +308,9 @@ public class FormatFunction
         // 显示JColorChooser对话框并获取选定的颜色
         Color selectedColor = JColorChooser.showDialog(null, "Choose area color", Color.WHITE);
 
-        if (selectedColor != null) 
-        {
-            // If a color was selected, setting it as the background color of JTextArea
-            // 如果选择了颜色，则将其设置为JTextArea的背景颜色
-            gui.textArea.setBackground(selectedColor);
-        }
-        MutableAttributeSet attrs = new SimpleAttributeSet();
-        StyleConstants.setBackground(attrs, selectedColor);
-        gui.doc.setCharacterAttributes(0, gui.doc.getLength(), attrs, false);
+        if (selectedColor == null) return;
+
+        gui.textArea.setBackground(selectedColor);
     }
 
     // Method “Quick highlight”
@@ -332,7 +323,8 @@ public class FormatFunction
         doc = gui.doc;
 
         String selectedText = gui.textArea.getSelectedText();
-        if (selectedText != null)
+
+        if (selectedText == null) return;
         {
             // Receiving the start and end of the selected text
             // 获取选定文本的开始和结束
@@ -341,19 +333,18 @@ public class FormatFunction
 
             // Creating new style
             // 创建新样式
-            SimpleAttributeSet attrs = new SimpleAttributeSet();
+            MutableAttributeSet attrs = new SimpleAttributeSet();
             StyleConstants.setBackground(attrs, Color.YELLOW);
 
             // Applying new style to selected region
-            // 将新样式应用于选定区域
+            // 将新样式应用于选定区域\
             doc.setCharacterAttributes(start, end - start, attrs, false);
-
+            
             // Popup message
             // 弹出消息
             gui.currentPopup = new PopupMessage(gui, "Text highlighted!");
             gui.currentPopup.setVisible(true);
         }
-        else return;
     }
 
     // Method "Reset text"
